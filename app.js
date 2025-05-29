@@ -7,6 +7,8 @@ import dbConnection from './dataBase/dbConnection.js';
 import { errorMiddleware } from './middlewares/error.js';
 
 import userRoutes from './router/userRoutes.js';
+import blogRoutes from './router/blogRoutes.js'
+import aboutUsRoutes from './router/aboutUsRoutes.js'
 
 
 const app = express();
@@ -33,7 +35,8 @@ app.use(fileUpload({
 
 //--
 app.use("/api/users", userRoutes);
-
+app.use("/api/blogs", blogRoutes);
+app.use("/api/about", aboutUsRoutes);
 dbConnection();  //--
 app.use(errorMiddleware); //--
 
