@@ -1,26 +1,51 @@
-import express from 'express';
+import express from "express";
 import {
-    rgisterUser,
-    loginUser,
-    logoutUser,
-    getUser,
-    updateUser,
-    updatePassword,   
-    forgotPassword,
-    resetPassword
-} from '../controllers/userController.js';
-import { isAuthenticated } from '../middlewares/auth.js';
+  registerUser,
+  loginUser,
+  logoutUser,
+  getMyProfile,
+  getAllUsers,
+  getAdminDashboard,
+  getSuperAdminDashboard,
+} from "../controllers/userController.js";
+import { isAuthenticated, authorizeRoles } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-// Define routes here
-router.post('/register', rgisterUser);  //--Register a new User
-router.post('/login', loginUser);  //--User Login
-router.get('/logout', isAuthenticated, logoutUser);  //--User Logout
-router.get('/me', isAuthenticated, getUser);  //--Get User
-router.put('/update/me', isAuthenticated, updateUser);  //--User Update
-router.put('/update/password', isAuthenticated, updatePassword);  //--User Update
-router.post('/password/forgot', forgotPassword);  //--forgot password 
-router.put('/password/reset/:token', resetPassword);  //--Reset password 
+// Public routes
+router.post("/register", registerUser);
+router.post("/login", loginUser);
+router.get("/logout", logoutUser);
+
+// Protected routes (any logged in user)
+router.get("/me", isAuthenticated, getMyProfile);
+
+// Admin-only routes
+router.get(
+  "/admin/dashboard",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  getAdminDashboard
+);
+router.get(
+  "/admin/users",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  getAllUsers
+);
+
+// SuperAdmin-only routes
+router.get(
+  "/superadmin/dashboard",
+  isAuthenticated,
+  authorizeRoles("superAdmin"),
+  getSuperAdminDashboard
+);
+router.get(
+  "/superadmin/users",
+  isAuthenticated,
+  authorizeRoles("superAdmin"),
+  getAllUsers
+);
 
 export default router;
