@@ -6,80 +6,71 @@ import crypto from 'crypto';
 const userSchema = new mongoose.Schema({
     fullName: {
         type: String,
-        required: [true, 'Full Name required'],
-        minlength: [4, 'Full Name must contain at least 2 characters'],
+        required: [true, 'Full Name is required'],
+        minlength: [4, 'Full Name must contain at least 4 characters'],
+        trim: true,
     },
     email: {
         type: String,
-        required: [true, 'Email required'],
+        required: [true, 'Email is required'],
+        unique: true,
+        match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email address'],
+        lowercase: true,
     },
     phone: {
         type: String,
-        required: [true, 'Phone Number required'],
-    },
-    aboutMe: {
-        type: String,
-        required: [true, 'About Me Field is required'],
+        required: [true, 'Phone Number is required'],
+        match: [/^\d{10}$/, 'Please enter a valid 10-digit phone number'],
     },
     password: {
         type: String,
         required: [true, 'Password is required'],
         minlength: [8, 'Password must contain at least 8 characters'],
-        select: false,  //--for getting user password
+        select: false,
     },
-    avatar: {
-        public_id: {
-            type: String,
-            required: true,
-        },
-        url: {
-            type: String,
-            required: true,
-        },
-    },
-    resume: {
-        public_id: {
-            type: String,
-            required: true,
-        },
-        url: {
-            type: String,
-            required: true,
-        },
-    },
-    portfolioURL: {
+    role: {
         type: String,
-        required: [true, "Portfolio URL Is Required!"]
-    }  
+        required: [true, 'Role is required'],
+        enum: ['user', 'admin', 'superAdmin'],
+        default: 'user',
+    },
+    resetPasswordToken: {
+        type: String,
+        select: false,
+    },
+    resetPasswordExpire: {
+        type: Date,
+        select: false,
+    },
 });
 
-//--for hashing password--
+// Hash password before saving
 userSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) return next(); //--
-
+    if (!this.isModified("password")) return next();
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-
-    // next();
+    next();
 });
 
-//--for comparing password--
+// Compare password
 userSchema.methods.comparePassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
-//--for generating json web token--
+// Generate JWT
 userSchema.methods.generateJsonWebToken = function () {
-    const token = jwt.sign({ id: this._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES });
-    return token;
+    return jwt.sign(
+        { id: this._id, role: this.role, email: this.email },
+        process.env.JWT_SECRET || 'defaultSecret',
+        { expiresIn: process.env.JWT_EXPIRES || '7d' }
+    );
 };
 
-//--Generating Reset Password Token
+// Generate Reset Password Token
 userSchema.methods.getResetPasswordToken = function () {
     const resetToken = crypto.randomBytes(20).toString('hex');
     this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
-
-    this.resetPasswordExpire = Date.now() + 15 * 60 * 1000; //--15 minutes
+    this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
     return resetToken;
 };
 
