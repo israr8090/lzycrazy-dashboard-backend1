@@ -1,25 +1,24 @@
-
-import crypto from 'crypto';
-import { catchAsyncErrors } from '../middlewares/catchAsyncErrors.js';
-import ErrorHandler from '../middlewares/error.js';
-import { userModel } from '../models/userSchema.js';
-import { v2 as cloudinary } from 'cloudinary';
-import { generateToken } from '../utils/jwtToken.js';
-import { sendEmail } from '../utils/sendEmail.js';
+import crypto from "crypto";
+import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
+import ErrorHandler from "../middlewares/error.js";
+import { userModel } from "../models/userSchema.js";
+import { v2 as cloudinary } from "cloudinary";
+import { generateToken } from "../utils/jwtToken.js";
+import { sendEmail } from "../utils/sendEmail.js";
 
 // Register User (without avatar and resume)
 export const registerUser = catchAsyncErrors(async (req, res, next) => {
-    const { fullName, email, phone, password, role } = req.body;
+  const { fullName, email, phone, password, role } = req.body;
 
-    const user = await userModel.create({
-        fullName,
-        email,
-        phone,
-        password,
-        role,
-    });
+  const user = await userModel.create({
+    fullName,
+    email,
+    phone,
+    password,
+    role,
+  });
 
-    generateToken(user, "User Registered Successfully", 201, res);
+  generateToken(user, "User Registered Successfully", 201, res);
 });
 
 // Login User
@@ -32,14 +31,65 @@ export const loginUser = catchAsyncErrors(async (req, res, next) => {
 
   const user = await userModel.findOne({ email }).select("+password");
 
-    if (!user || !(await user.comparePassword(password))) {
-        return next(new ErrorHandler('Invalid email or password', 401));
-    }
+  if (!user || !(await user.comparePassword(password))) {
+    return next(new ErrorHandler("Invalid email or password", 401));
+  }
 
-    generateToken(user, "User Logged In Successfully", 200, res);
-
+  generateToken(user, "User Logged In Successfully", 200, res);
 });
 
+//Logout User
+export const logoutUser = catchAsyncErrors(async (req, res, next) => {
+  res
+    .status(200)
+    .cookie("token", "", {
+      expires: new Date(Date.now()),
+      httpOnly: true,
+      sameSite: "None",
+      secure: true,
+    })
+    .json({
+      success: true,
+      message: "User Logged Out Successfully!",
+    });
+});
+
+// Get logged-in user profile
+export const getMyProfile = catchAsyncErrors(async (req, res, next) => {
+  const user = await userModel.findById(req.user.id);
+  if (!user) {
+    return next(new ErrorHandler("User not found", 404));
+  }
+  res.status(200).json({ success: true, user });
+});
+
+// Get all users (for admin and superadmin)
+export const getAllUsers = catchAsyncErrors(async (req, res, next) => {
+  const users = await userModel.find();
+  res.status(200).json({ success: true, users });
+});
+
+// Admin Dashboard Data
+export const getAdminDashboard = catchAsyncErrors(async (req, res, next) => {
+  const totalUsers = await userModel.countDocuments();
+  res.status(200).json({
+    success: true,
+    message: "Admin Dashboard Data",
+    data: { totalUsers },
+  });
+});
+
+// SuperAdmin Dashboard Data
+export const getSuperAdminDashboard = catchAsyncErrors(
+  async (req, res, next) => {
+    const totalUsers = await userModel.countDocuments();
+    res.status(200).json({
+      success: true,
+      message: "SuperAdmin Dashboard Data",
+      data: { totalUsers },
+    });
+  }
+);
 
 //--update user--
 export const updateUser = catchAsyncErrors(async (req, res, next) => {
@@ -66,10 +116,8 @@ export const updateUser = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-
 // Update Password
 export const updatePassword = catchAsyncErrors(async (req, res, next) => {
-
   const { currentPassword, newPassword, confirmNewPassword } = req.body;
 
   if (!currentPassword || !newPassword || !confirmNewPassword) {
@@ -77,7 +125,6 @@ export const updatePassword = catchAsyncErrors(async (req, res, next) => {
   }
 
   const user = await userModel.findById(req.user.id).select("+password");
-
 
   const isPasswordMatched = await user.comparePassword(currentPassword);
 
@@ -138,7 +185,6 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
 
 // Reset Password
 export const resetPassword = catchAsyncErrors(async (req, res, next) => {
-
   //--
   const { token } = req.params;
 
