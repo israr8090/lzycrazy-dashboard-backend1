@@ -8,83 +8,13 @@ import { sendEmail } from "../utils/sendEmail.js";
 
 //--New user register
 export const rgisterUser = catchAsyncErrors(async (req, res, next) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
-    return next(
-      new ErrorHandler("Avatar, Resume and Resume Pdf are Required!", 400)
-    );
-  }
-
-  const { avatar, resume } = req.files;
-  // console.log(avatar, resume)
-  //--for Avatar
-  const cloudinaryResponseForAvatar = await cloudinary.uploader.upload(
-    avatar.tempFilePath,
-    {
-      folder: "AVATARS",
-    }
-  );
-
-  if (!cloudinaryResponseForAvatar || cloudinaryResponseForAvatar.error) {
-    console.error(
-      "Cloudinary Error",
-      cloudinaryResponseForAvatar.error || "Unknown Cloudinary Error"
-    );
-  }
-
-  //--for Resume
-  const cloudinaryResponseForResume = await cloudinary.uploader.upload(
-    resume.tempFilePath,
-    {
-      folder: "My_Resume",
-      // public_id: `${Date.now()}-${avatar.originalname}`,
-      // width: 200,
-      // height: 200,
-      // crop: 'fill'
-    }
-  );
-
-  if (!cloudinaryResponseForResume || cloudinaryResponseForResume.error) {
-    console.error(
-      "Cloudinary Error",
-      cloudinaryResponseForResume.error || "Unknown Cloudinary Error"
-    );
-  }
-
   //--
-  const {
-    fullName,
-    email,
-    phone,
-    aboutMe,
-    password,
-    portfolioURL,
-    githubURL,
-    linkedinURL,
-    twitterURL,
-    instagramURL,
-    facebookURL,
-  } = req.body;
+  const { fullName, email, phone } = req.body;
 
   const user = await userModel.create({
     fullName,
     email,
-    phone,
-    aboutMe,
     password,
-    portfolioURL,
-    githubURL,
-    linkedinURL,
-    twitterURL,
-    instagramURL,
-    facebookURL,
-    avatar: {
-      public_id: cloudinaryResponseForAvatar.public_id,
-      url: cloudinaryResponseForAvatar.secure_url,
-    },
-    resume: {
-      public_id: cloudinaryResponseForResume.public_id,
-      url: cloudinaryResponseForResume.secure_url,
-    },
   });
 
   //--generate JWT token
