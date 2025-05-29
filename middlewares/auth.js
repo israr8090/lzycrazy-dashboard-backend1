@@ -7,10 +7,15 @@ export const isAuthenticated = catchAsyncErrors(async (req, res, next) => {
     const {token} = req.cookies;
 
     if(!token) {
-        return next(new ErrorHandler('User are not authenticated!', 400));
+        return next(new ErrorHandler('User is not authenticated!', 400));
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    let decoded = null;
+    try {
+        decoded= jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+        return next(new ErrorHandler('Invalid Token!', 401));
+    }
 
     req.user = await userModel.findById(decoded.id);
     next();

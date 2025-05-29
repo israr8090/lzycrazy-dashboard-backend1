@@ -213,16 +213,16 @@ export const updatePassword = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Please provide all fields', 400));
     }
 
+    if (newPassword !== confirmNewPassword) {
+        return next(new ErrorHandler('New password and confirm password do not match', 400));
+    };
+
     const user = await userModel.findById(req.user.id).select("+password");
 
     const isPasswordMatched = await user.comparePassword(currentPassword);
 
     if (!isPasswordMatched) {
         return next(new ErrorHandler('Invalid current password', 400));
-    };
-
-    if (newPassword !== confirmNewPassword) {
-        return next(new ErrorHandler('New password and confirm password do not match', 400));
     };
 
     user.password = newPassword;  //--
@@ -237,27 +237,32 @@ export const updatePassword = catchAsyncErrors(async (req, res, next) => {
 
 //--Forgot Password--
 export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
+    const { email } = req.body;
+    if (!email) {
+        return next(new ErrorHandler('Please provide an email', 400));
+    }
 
-    const user = await userModel.findOne({ email: req.body.email });
+    //--Check if user exists with that email
+    const user = await userModel.findOne({ email: email });
 
     if (!user) {
-        return next(new ErrorHandler('User not Found', 404));
+        return next(new ErrorHandler('No user is registered with the email', 404));
     };
 
     const resetToken = user.getResetPasswordToken();    
 
     await user.save({ validateBeforeSave: false });
 
-    const resetPasswordUrl = `${process.env.DESHBOARD_URL}/password/reset/${resetToken}`;
+    const resetPasswordUrl = `${process.env.DASHBOARD_URL}/password/reset/${resetToken}`;
 
-    const message = `Your Reset Password Token is :- \n\n ${resetPasswordUrl} \n\n if 
-    you've not request for this please ignore it.`;
+    const message = `To Reset your password follow the below given link :\n\n${resetPasswordUrl}\n\n This link will expire in 15 minutes.\n\nif 
+    you did not request this please ignore this email.`;
 
     try {
 
         await sendEmail({
             email: user.email,
-            subject: "Personal Portfolio Deshboard Recovery Password",
+            subject: "Reset Your Password",
             message
         });
 
@@ -270,7 +275,7 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
         user.resetPasswordExpire = undefined;
         user.resetPasswordToken = undefined;
         await user.save();
-        return next(new ErrorHandler('error.message', 500));
+        return next(new ErrorHandler(error.message, 500));
     }
 });
 
@@ -278,6 +283,16 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
 export const resetPassword = catchAsyncErrors(async (req, res, next) => {
     //--
     const { token } = req.params;
+    const {password, confirmPassword} = req.body;
+
+    if (!password || !confirmPassword) {
+        return next(new ErrorHandler('Please provide password and confirm password', 400));
+    }
+    
+    //--
+    if (password !== confirmPassword) {
+        return next(new ErrorHandler('Password and Confirm Password do not match', 400));
+    }
 
     //--
     const resetPasswordToken = crypto
@@ -296,12 +311,9 @@ export const resetPassword = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler('Invalid Token or Token Expired', 400));
     };
 
-    //--
-    if (req.body.password !== req.body.confirmPassword) {
-        return next(new ErrorHandler('Password and Confirm Password do not match', 400));
-    }
+    
 
-    user.password = req.body.password;  //--
+    user.password = password;  //--
 
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
