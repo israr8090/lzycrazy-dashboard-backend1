@@ -1,3 +1,4 @@
+
 import crypto from 'crypto';
 import { catchAsyncErrors } from '../middlewares/catchAsyncErrors.js';
 import ErrorHandler from '../middlewares/error.js';
@@ -23,166 +24,154 @@ export const registerUser = catchAsyncErrors(async (req, res, next) => {
 
 // Login User
 export const loginUser = catchAsyncErrors(async (req, res, next) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    if (!email || !password) {
-        return next(new ErrorHandler('Please provide email and password', 400));
-    }
+  if (!email || !password) {
+    return next(new ErrorHandler("Please provide email and password", 400));
+  }
 
-    const user = await userModel.findOne({ email }).select('+password');
+  const user = await userModel.findOne({ email }).select("+password");
 
     if (!user || !(await user.comparePassword(password))) {
         return next(new ErrorHandler('Invalid email or password', 401));
     }
 
     generateToken(user, "User Logged In Successfully", 200, res);
+
 });
 
-// Logout User
-export const logoutUser = catchAsyncErrors(async (req, res, next) => {
-    res.status(200).cookie("token", "", {
-        expires: new Date(Date.now()),
-        httpOnly: true,
-        sameSite: "None",
-        secure: true,
-    }).json({
-        success: true,
-        message: "User Logged Out Successfully!",
-    });
-});
 
-// Get logged-in user profile
-export const getMyProfile = catchAsyncErrors(async (req, res, next) => {
-    const user = await userModel.findById(req.user.id);
-    if (!user) {
-        return next(new ErrorHandler("User not found", 404));
-    }
-    res.status(200).json({ success: true, user });
-});
-
-// Get all users (for admin and superadmin)
-export const getAllUsers = catchAsyncErrors(async (req, res, next) => {
-    const users = await userModel.find();
-    res.status(200).json({ success: true, users });
-});
-
-// Admin Dashboard Data
-export const getAdminDashboard = catchAsyncErrors(async (req, res, next) => {
-    const totalUsers = await userModel.countDocuments();
-    res.status(200).json({
-        success: true,
-        message: "Admin Dashboard Data",
-        data: { totalUsers },
-    });
-});
-
-// SuperAdmin Dashboard Data
-export const getSuperAdminDashboard = catchAsyncErrors(async (req, res, next) => {
-    const totalUsers = await userModel.countDocuments();
-    res.status(200).json({
-        success: true,
-        message: "SuperAdmin Dashboard Data",
-        data: { totalUsers },
-    });
-});
-
-// Update User (without avatar and resume)
+//--update user--
 export const updateUser = catchAsyncErrors(async (req, res, next) => {
-    const updateData = {
-        fullName: req.body.fullName,
-        email: req.body.email,
-        phone: req.body.phone,
-    };
+  const newUserData = {
+    fullName: req.body.fullName,
+    email: req.body.email,
+    phone: req.body.phone,
+  };
 
-    // Removed avatar and resume update logic
+  const updatedUser = await userModel.findByIdAndUpdate(
+    req.user.id,
+    newUserData,
+    {
+      new: true, //-
+      runValidators: true, //-
+      useFindAndModify: false, //-
+    }
+  );
 
-    const updatedUser = await userModel.findByIdAndUpdate(req.user.id, updateData, {
-        new: true,
-        runValidators: true,
-    });
-
-    res.status(200).json({ success: true, message: "User Updated Successfully!", user: updatedUser });
+  res.status(200).json({
+    success: true,
+    message: "User Updated Successfully!",
+    user: updatedUser,
+  });
 });
+
 
 // Update Password
 export const updatePassword = catchAsyncErrors(async (req, res, next) => {
-    const { currentPassword, newPassword, confirmNewPassword } = req.body;
 
-    if (!currentPassword || !newPassword || !confirmNewPassword) {
-        return next(new ErrorHandler('Please provide all fields', 400));
-    }
+  const { currentPassword, newPassword, confirmNewPassword } = req.body;
 
-    const user = await userModel.findById(req.user.id).select("+password");
+  if (!currentPassword || !newPassword || !confirmNewPassword) {
+    return next(new ErrorHandler("Please provide all fields", 400));
+  }
 
-    if (!(await user.comparePassword(currentPassword))) {
-        return next(new ErrorHandler('Current password is incorrect', 400));
-    }
+  const user = await userModel.findById(req.user.id).select("+password");
 
-    if (newPassword !== confirmNewPassword) {
-        return next(new ErrorHandler('Passwords do not match', 400));
-    }
 
-    user.password = newPassword;
-    await user.save();
+  const isPasswordMatched = await user.comparePassword(currentPassword);
 
-    res.status(200).json({ success: true, message: "Password updated successfully!" });
+  if (!isPasswordMatched) {
+    return next(new ErrorHandler("Invalid current password", 400));
+  }
+
+  if (newPassword !== confirmNewPassword) {
+    return next(
+      new ErrorHandler("New password and confirm password do not match", 400)
+    );
+  }
+
+  user.password = newPassword; //--
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Password Updated Successfully!",
+  });
 });
 
 // Forgot Password
 export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
-    const user = await userModel.findOne({ email: req.body.email });
+  const user = await userModel.findOne({ email: req.body.email });
 
-    if (!user) {
-        return next(new ErrorHandler('User not found', 404));
-    }
+  if (!user) {
+    return next(new ErrorHandler("User not Found", 404));
+  }
 
-    const resetToken = user.getResetPasswordToken();
-    await user.save({ validateBeforeSave: false });
-    const resetURL = `${process.env.DASHBOARD_URL}/password/reset/${resetToken}`;
-    const message = `Your password reset link is: \n\n ${resetURL} \n\n If you did not request this, please ignore this email.`;
+  const resetToken = user.getResetPasswordToken();
 
-    try {
-        await sendEmail({
-            email: user.email,
-            subject: 'Password Recovery',
-            message,
-        });
+  await user.save({ validateBeforeSave: false });
 
-        res.status(200).json({
-            success: true,
-            message: `Reset email sent to ${user.email}`,
-        });
+  const resetPasswordUrl = `${process.env.DESHBOARD_URL}/password/reset/${resetToken}`;
 
-    } catch (err) {
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpire = undefined;
-        await user.save();
-        return next(new ErrorHandler('Email could not be sent', 500));
-    }
+  const message = `Your Reset Password Token is :- \n\n ${resetPasswordUrl} \n\n if 
+    you've not request for this please ignore it.`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: "Personal Portfolio Deshboard Recovery Password",
+      message,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Email sent to ${user.email} successfully!`,
+    });
+  } catch (error) {
+    user.resetPasswordExpire = undefined;
+    user.resetPasswordToken = undefined;
+    await user.save();
+    return next(new ErrorHandler("error.message", 500));
+  }
 });
 
 // Reset Password
 export const resetPassword = catchAsyncErrors(async (req, res, next) => {
-    const { token } = req.params;
-    const { password, confirmPassword } = req.body;
-    const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
 
-    const user = await userModel.findOne({
-        resetPasswordToken,
-        resetPasswordExpire: { $gt: Date.now() }
-    });
+  //--
+  const { token } = req.params;
 
-    if (!user) {
-        return next(new ErrorHandler('Invalid or expired reset token', 400));
-    }
+  //--
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
 
-    if (password !== confirmPassword) {
-        return next(new ErrorHandler('Passwords do not match', 400));
-    }
-    user.password = password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-    await user.save();
+  //--
+  const user = await userModel.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
 
-    generateToken(user, "Password Reset Successfully!", 200, res);
+  //--
+  if (!user) {
+    return next(new ErrorHandler("Invalid Token or Token Expired", 400));
+  }
+
+  //--
+  if (req.body.password !== req.body.confirmPassword) {
+    return next(
+      new ErrorHandler("Password and Confirm Password do not match", 400)
+    );
+  }
+
+  user.password = req.body.password; //--
+
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save(); //--
+
+  generateToken(user, "Reset Password Successfully!", 200, res); //--
 });
