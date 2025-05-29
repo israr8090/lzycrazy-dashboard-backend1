@@ -138,7 +138,6 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
 
     const resetToken = user.getResetPasswordToken();
     await user.save({ validateBeforeSave: false });
-
     const resetURL = `${process.env.DASHBOARD_URL}/password/reset/${resetToken}`;
     const message = `Your password reset link is: \n\n ${resetURL} \n\n If you did not request this, please ignore this email.`;
 
@@ -166,7 +165,6 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
 export const resetPassword = catchAsyncErrors(async (req, res, next) => {
     const { token } = req.params;
     const { password, confirmPassword } = req.body;
-
     const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
 
     const user = await userModel.findOne({
@@ -181,7 +179,6 @@ export const resetPassword = catchAsyncErrors(async (req, res, next) => {
     if (password !== confirmPassword) {
         return next(new ErrorHandler('Passwords do not match', 400));
     }
-
     user.password = password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
