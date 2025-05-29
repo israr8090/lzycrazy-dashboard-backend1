@@ -24,7 +24,7 @@ export const errorMiddleware = (err, req, res, next) => {
 
     //--token expired
     if(err.name === "TokenExpiredError"){
-        const message = `Json Web Token Is Expired. Try to Ligin Again!`;
+        const message = `Json Web Token Is Expired. Try to Login Again!`;
         err = new ErrorHandler(message, 400);
     };
 

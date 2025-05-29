@@ -1,27 +1,29 @@
-import crypto from "crypto";
-import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
-import ErrorHandler from "../middlewares/error.js";
-import { userModel } from "../models/userSchema.js";
-import { v2 as cloudinary } from "cloudinary";
-import { generateToken } from "../utils/jwtToken.js";
-import { sendEmail } from "../utils/sendEmail.js";
 
-//--New user register
-export const rgisterUser = catchAsyncErrors(async (req, res, next) => {
-  //--
-  const { fullName, email, phone } = req.body;
+import crypto from 'crypto';
+import { catchAsyncErrors } from '../middlewares/catchAsyncErrors.js';
+import ErrorHandler from '../middlewares/error.js';
+import { userModel } from '../models/userSchema.js';
+import { v2 as cloudinary } from 'cloudinary';
+import { generateToken } from '../utils/jwtToken.js';
+import { sendEmail } from '../utils/sendEmail.js';
 
-  const user = await userModel.create({
-    fullName,
-    email,
-    password,
-  });
+// Register User (without avatar and resume)
+export const registerUser = catchAsyncErrors(async (req, res, next) => {
+    const { fullName, email, phone, password, role } = req.body;
 
-  //--generate JWT token
-  generateToken(user, "User Registered Successfully..", 201, res);
+    const user = await userModel.create({
+        fullName,
+        email,
+        phone,
+        password,
+        role,
+    });
+
+    generateToken(user, "User Registered Successfully", 201, res);
+
 });
 
-//--user login--
+// Login User
 export const loginUser = catchAsyncErrors(async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -31,39 +33,14 @@ export const loginUser = catchAsyncErrors(async (req, res, next) => {
 
   const user = await userModel.findOne({ email }).select("+password");
 
-  if (!user || !(await user.comparePassword(password))) {
-    return next(new ErrorHandler("Invalid email or password", 401));
-  }
+    if (!user || !(await user.comparePassword(password))) {
+        return next(new ErrorHandler('Invalid email or password', 401));
+    }
 
-  //--generate JWT token
-  generateToken(user, "User Logged In Successfully..", 200, res);
+    generateToken(user, "User Logged In Successfully", 200, res);
+
 });
 
-//--user logout--
-export const logoutUser = catchAsyncErrors(async (req, res, next) => {
-  res
-    .status(200)
-    .cookie("token", "", {
-      expires: new Date(Date.now()),
-      httpOnly: true,
-    })
-    .json({
-      success: true,
-      message: "User Logged Out Successfully!",
-      sameSite: "None",
-      secure: true,
-    });
-});
-
-//-get user for admin--
-export const getUser = catchAsyncErrors(async (req, res, next) => {
-  const user = await userModel.findById(req.user.id);
-
-  res.status(200).json({
-    success: true,
-    user,
-  });
-});
 
 //--update user--
 export const updateUser = catchAsyncErrors(async (req, res, next) => {
@@ -90,8 +67,10 @@ export const updateUser = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-//--update Password--
+
+// Update Password
 export const updatePassword = catchAsyncErrors(async (req, res, next) => {
+
   const { currentPassword, newPassword, confirmNewPassword } = req.body;
 
   if (!currentPassword || !newPassword || !confirmNewPassword) {
@@ -99,6 +78,7 @@ export const updatePassword = catchAsyncErrors(async (req, res, next) => {
   }
 
   const user = await userModel.findById(req.user.id).select("+password");
+
 
   const isPasswordMatched = await user.comparePassword(currentPassword);
 
@@ -121,7 +101,7 @@ export const updatePassword = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-//--Forgot Password--
+// Forgot Password
 export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
   const user = await userModel.findOne({ email: req.body.email });
 
@@ -157,8 +137,9 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-//--Reset Password--
+// Reset Password
 export const resetPassword = catchAsyncErrors(async (req, res, next) => {
+
   //--
   const { token } = req.params;
 
@@ -194,4 +175,4 @@ export const resetPassword = catchAsyncErrors(async (req, res, next) => {
   await user.save(); //--
 
   generateToken(user, "Reset Password Successfully!", 200, res); //--
-});
+})

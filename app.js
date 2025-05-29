@@ -5,7 +5,6 @@ import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
 import dbConnection from "./dataBase/dbConnection.js";
 import { errorMiddleware } from "./middlewares/error.js";
-
 import userRouter from "./router/userRoutes.js";
 import produtRoute from "./router/ProductRoute.js";
 import testimonialsRoute from "./router/TestimonialsRoute.js";
@@ -36,11 +35,15 @@ app.use(
 );
 
 //--
+
 app.use("/api/v1/user", userRouter); //-- user route
 app.use("/api/v1/products", produtRoute);
 app.use("/api/v1/testimonials", testimonialsRoute);
 
 dbConnection(); //--
+
+dbConnection(); //--
+
 app.use(errorMiddleware); //--
 
 export default app;
