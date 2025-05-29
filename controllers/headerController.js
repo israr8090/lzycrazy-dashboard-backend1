@@ -1,9 +1,11 @@
 import { headerModel } from "../models/headerSchema.js";
-import {uploadToCloudinary} from "../utils/cloudinary.js"
+import { uploadToCloudinary } from "../utils/cloudinary.js";
 
 const createHeader = async (req, res) => {
   const { title, description } = req.body;
-    console.log("controller header create called")
+  console.log("req.body", req.body);
+  console.log("req.file", req.file);
+  console.log("controller header create called");
   if (!req.file) {
     return res.status(400).json({ error: "Logo image is required." });
   }
@@ -15,7 +17,7 @@ const createHeader = async (req, res) => {
       title,
       description,
       logoUrl: logoUrl,
-      admin: req.user._id
+      admin: req.user._id,
     });
 
     res.status(201).json({
@@ -27,4 +29,4 @@ const createHeader = async (req, res) => {
   }
 };
 
-export {createHeader}
+export { createHeader };
