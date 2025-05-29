@@ -7,6 +7,7 @@ import dbConnection from './dataBase/dbConnection.js';
 import { errorMiddleware } from './middlewares/error.js';
 
 import userRoutes from './router/userRoutes.js';
+import headerRoutes from './router/headerRoutes.js'
 
 
 const app = express();
@@ -26,13 +27,14 @@ app.use(express.json());  //--
 app.use(express.urlencoded({ extended: true }));  //--
 
 //--
-app.use(fileUpload({
-    useTempFiles: true,
-    tempFileDir: '/tmp/'  //--
-}));
+// app.use(fileUpload({
+    // useTempFiles: true,
+    // tempFileDir: '/temp/'  //--
+// }));
 
 //--
 app.use("/api/users", userRoutes);
+app.use("/api/header", headerRoutes); 
 
 dbConnection();  //--
 app.use(errorMiddleware); //--

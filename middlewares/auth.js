@@ -16,6 +16,7 @@ export const isAuthenticated = async (req, res, next) => {
       return res.status(401).json({ message: "User not found, invalid token" });
     }
 
+    console.log("isAuthenticated middleware called");
     next();
   } catch (error) {
     return res.status(401).json({ message: "Invalid or expired token" });
