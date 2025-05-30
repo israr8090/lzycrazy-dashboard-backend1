@@ -8,6 +8,7 @@ import { errorMiddleware } from "./middlewares/error.js";
 
 import userRoutes from "./router/userRoutes.js";
 import headerRoutes from "./router/headerRoutes.js";
+import appointmentRoutes from "./router/appointmentRoutes.js";
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use(express.urlencoded({ extended: true })); //--
 //--
 app.use("/api/users", userRoutes);
 app.use("/api/header", headerRoutes);
+app.use("/api/appointments", appointmentRoutes);
 
 dbConnection(); //--
 app.use(errorMiddleware); //--
