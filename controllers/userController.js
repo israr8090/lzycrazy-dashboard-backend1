@@ -6,17 +6,29 @@ import { v2 as cloudinary } from "cloudinary";
 import { generateToken } from "../utils/jwtToken.js";
 import { sendEmail } from "../utils/sendEmail.js";
 
-// Register User (without avatar and resume)
+// Register User with Image Upload
 export const registerUser = catchAsyncErrors(async (req, res, next) => {
-  const { fullName, email, phone, password, role } = req.body;
+    const { fullName, email, phone, password, role, image } = req.body;
 
-  const user = await userModel.create({
-    fullName,
-    email,
-    phone,
-    password,
-    role,
-  });
+    let imageUrl = "";
+    if (image) {
+        const uploaded = await cloudinary.uploader.upload(image, {
+            folder: "avatars",
+            width: 150,
+            crop: "scale",
+        });
+        imageUrl = uploaded.secure_url;
+    }
+
+    const user = await userModel.create({
+        fullName,
+        email,
+        phone,
+        password,
+        role,
+        image: imageUrl,
+    });
+
 
   generateToken(user, "User Registered Successfully", 201, res);
 });
@@ -54,7 +66,7 @@ export const logoutUser = catchAsyncErrors(async (req, res, next) => {
     });
 });
 
-// Get logged-in user profile
+// Get My Profile
 export const getMyProfile = catchAsyncErrors(async (req, res, next) => {
   const user = await userModel.findById(req.user.id);
   if (!user) {
@@ -63,13 +75,13 @@ export const getMyProfile = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({ success: true, user });
 });
 
-// Get all users (for admin and superadmin)
+// Get All Users
 export const getAllUsers = catchAsyncErrors(async (req, res, next) => {
   const users = await userModel.find();
   res.status(200).json({ success: true, users });
 });
 
-// Admin Dashboard Data
+// Admin Dashboard
 export const getAdminDashboard = catchAsyncErrors(async (req, res, next) => {
   const totalUsers = await userModel.countDocuments();
   res.status(200).json({
@@ -79,9 +91,8 @@ export const getAdminDashboard = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-// SuperAdmin Dashboard Data
-export const getSuperAdminDashboard = catchAsyncErrors(
-  async (req, res, next) => {
+// SuperAdmin Dashboard
+export const getSuperAdminDashboard = catchAsyncErrors(async (req, res, next) => {
     const totalUsers = await userModel.countDocuments();
     res.status(200).json({
       success: true,
@@ -91,23 +102,28 @@ export const getSuperAdminDashboard = catchAsyncErrors(
   }
 );
 
-//--update user--
-export const updateUser = catchAsyncErrors(async (req, res, next) => {
-  const newUserData = {
-    fullName: req.body.fullName,
-    email: req.body.email,
-    phone: req.body.phone,
-  };
 
-  const updatedUser = await userModel.findByIdAndUpdate(
-    req.user.id,
-    newUserData,
-    {
-      new: true, //-
-      runValidators: true, //-
-      useFindAndModify: false, //-
+// Update User Profile (with optional image)
+export const updateUser = catchAsyncErrors(async (req, res, next) => {
+    const updateData = {
+        fullName: req.body.fullName,
+        email: req.body.email,
+        phone: req.body.phone,
+    };
+
+    if (req.body.image) {
+        const uploaded = await cloudinary.uploader.upload(req.body.image, {
+            folder: "avatars",
+            width: 150,
+            crop: "scale",
+        });
+        updateData.image = uploaded.secure_url;
     }
-  );
+
+    const updatedUser = await userModel.findByIdAndUpdate(req.user.id, updateData, {
+        new: true,
+        runValidators: true,
+    });
 
   res.status(200).json({
     success: true,
@@ -155,38 +171,39 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("User not Found", 404));
   }
 
-  const resetToken = user.getResetPasswordToken();
 
-  await user.save({ validateBeforeSave: false });
+    const resetToken = user.getResetPasswordToken();
+    await user.save({ validateBeforeSave: false });
 
-  const resetPasswordUrl = `${process.env.DESHBOARD_URL}/password/reset/${resetToken}`;
+    const resetURL = `${process.env.DASHBOARD_URL}/password/reset/${resetToken}`;
+    const message = `Your password reset link is: \n\n ${resetURL} \n\n If you did not request this, please ignore this email.`;
 
-  const message = `Your Reset Password Token is :- \n\n ${resetPasswordUrl} \n\n if 
-    you've not request for this please ignore it.`;
+    try {
+        await sendEmail({
+            email: user.email,
+            subject: 'Password Recovery',
+            message,
+        });
 
-  try {
-    await sendEmail({
-      email: user.email,
-      subject: "Personal Portfolio Deshboard Recovery Password",
-      message,
-    });
+        res.status(200).json({
+            success: true,
+            message: `Reset email sent to ${user.email}`,
+        });
 
-    res.status(200).json({
-      success: true,
-      message: `Email sent to ${user.email} successfully!`,
-    });
-  } catch (error) {
-    user.resetPasswordExpire = undefined;
-    user.resetPasswordToken = undefined;
-    await user.save();
-    return next(new ErrorHandler("error.message", 500));
-  }
+    } catch (err) {
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        await user.save();
+        return next(new ErrorHandler('Email could not be sent', 500));
+    }
 });
 
 // Reset Password
 export const resetPassword = catchAsyncErrors(async (req, res, next) => {
-  //--
-  const { token } = req.params;
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
 
   //--
   const resetPasswordToken = crypto
@@ -200,24 +217,16 @@ export const resetPassword = catchAsyncErrors(async (req, res, next) => {
     resetPasswordExpire: { $gt: Date.now() },
   });
 
-  //--
-  if (!user) {
-    return next(new ErrorHandler("Invalid Token or Token Expired", 400));
-  }
 
-  //--
-  if (req.body.password !== req.body.confirmPassword) {
-    return next(
-      new ErrorHandler("Password and Confirm Password do not match", 400)
-    );
-  }
+    if (password !== confirmPassword) {
+        return next(new ErrorHandler('Passwords do not match', 400));
+    }
 
-  user.password = req.body.password; //--
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
 
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpire = undefined;
-
-  await user.save(); //--
 
   generateToken(user, "Reset Password Successfully!", 200, res); //--
 });

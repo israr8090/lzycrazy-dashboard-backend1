@@ -11,9 +11,12 @@ import dbConnection from "./dataBase/dbConnection.js";
 import { errorMiddleware } from "./middlewares/error.js";
 
 import userRoutes from "./router/userRoutes.js";
+import blogRoutes from './router/blogRoutes.js'
+import aboutUsRoutes from './router/aboutUsRoutes.js'
 import headerRoutes from "./router/headerRoutes.js";
 import appointmentRoutes from "./router/appointmentRoutes.js";
 import footerRoutes from './router/footerRoutes.js';
+
 
 
 const app = express();
@@ -45,6 +48,7 @@ app.use(express.urlencoded({ extended: true })); //--
 
 
 //--
+
 // app.use(fileUpload({
 // useTempFiles: true,
 // tempFileDir: '/temp/'  //--
@@ -53,8 +57,11 @@ app.use(express.urlencoded({ extended: true })); //--
 //--
 app.use("/api/users", userRoutes);
 app.use("/api/header", headerRoutes);
+app.use("/api/blogs", blogRoutes);
+app.use("/api/about", aboutUsRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/footer", footerRoutes);
+
 
 
 dbConnection(); //--
