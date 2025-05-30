@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin', 'superAdmin'],
         default: 'user',
     },
+    image: {
+        type: String,            // image file name or URL
+        default: "",             // default empty
+    },
     resetPasswordToken: {
         type: String,
         select: false,
