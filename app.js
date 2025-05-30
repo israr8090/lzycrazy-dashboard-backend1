@@ -9,10 +9,12 @@ import userRouter from "./router/userRoutes.js";
 import produtRoute from "./router/ProductRoute.js";
 import testimonialsRoute from "./router/TestimonialsRoute.js";
 import morgan from "morgan";
+
 const app = express();
 
 dotenv.config({ path: "./config/config.env" }); //--
 
+dbConnection(); //--
 //--
 app.use(
   cors({
@@ -27,22 +29,18 @@ app.use(express.json()); //--
 app.use(express.urlencoded({ extended: true })); //--
 
 //--
-app.use(
-  fileUpload({
-    useTempFiles: true,
-    tempFileDir: "/tmp/", //--
-  })
-);
+// app.use(
+//   fileUpload({
+//     useTempFiles: true,
+//     tempFileDir: "/tmp/", //--
+//   })
+// );
 
 //--
 
 app.use("/api/v1/user", userRouter); //-- user route
 app.use("/api/v1/products", produtRoute);
 app.use("/api/v1/testimonials", testimonialsRoute);
-
-dbConnection(); //--
-
-dbConnection(); //--
 
 app.use(errorMiddleware); //--
 

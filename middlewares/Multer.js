@@ -1,8 +1,18 @@
 import multer, { diskStorage } from "multer";
-import { extname } from "path";
+import { extname, join } from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+// Get current directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const storage = diskStorage({
-  destination: (req, file, cb) => cb(null, "/temp/"),
+  destination: (req, file, cb) => {
+    // Use a relative path to your project directory
+    const tempDir = join(__dirname, "../temp");
+    cb(null, tempDir);
+  },
   filename: (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
 });
 

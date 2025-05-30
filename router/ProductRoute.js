@@ -1,5 +1,10 @@
 import express from "express";
-import { createProduct } from "../controllers/ProductController.js";
+import {
+  createProduct,
+  DeleteProducts,
+  getAllProducts,
+  UpdateProduct,
+} from "../controllers/ProductController.js";
 import { isAuthenticated } from "../middlewares/auth.js";
 import upload from "../middlewares/Multer.js";
 
@@ -11,5 +16,13 @@ router.post(
   upload.single("image"),
   createProduct
 );
+router.put(
+  "/update-product/:id",
+  isAuthenticated,
+  upload.single("image"),
+  UpdateProduct
+);
+router.get("/get-product", isAuthenticated, getAllProducts);
+router.delete("/delete-product/:id", isAuthenticated, DeleteProducts);
 
 export default router;
