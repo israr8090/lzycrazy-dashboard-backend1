@@ -1,7 +1,3 @@
-
-
-
-
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -11,21 +7,19 @@ import dbConnection from "./dataBase/dbConnection.js";
 import { errorMiddleware } from "./middlewares/error.js";
 
 import userRoutes from "./router/userRoutes.js";
-import blogRoutes from './router/blogRoutes.js'
-import aboutUsRoutes from './router/aboutUsRoutes.js'
+import blogRoutes from "./router/blogRoutes.js";
+import aboutUsRoutes from "./router/aboutUsRoutes.js";
 import headerRoutes from "./router/headerRoutes.js";
 import appointmentRoutes from "./router/appointmentRoutes.js";
-import footerRoutes from './router/footerRoutes.js';
-
-
+import footerRoutes from "./router/footerRoutes.js";
+import produtRoute from "./router/ProductRoute.js";
+import testimonialsRoute from "./router/TestimonialsRoute.js";
 
 const app = express();
 
 dotenv.config({ path: "./config/config.env" }); //--
 
 //--
-
-
 
 app.use(
   cors({
@@ -35,17 +29,13 @@ app.use(
   })
 );
 
-
 app.use(cookieParser()); //--for accessing cokkies--
 app.use(express.json()); //--
 app.use(express.urlencoded({ extended: true })); //--
 
-
 // File upload handling is now done in individual routes using multer
 
 //--
-
-
 
 //--
 
@@ -61,8 +51,8 @@ app.use("/api/blogs", blogRoutes);
 app.use("/api/about", aboutUsRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/footer", footerRoutes);
-
-
+app.use("/api/v1/products", produtRoute);
+app.use("/api/v1/testimonials", testimonialsRoute);
 
 dbConnection(); //--
 app.use(errorMiddleware); //--

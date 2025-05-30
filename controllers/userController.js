@@ -205,11 +205,6 @@ export const resetPassword = catchAsyncErrors(async (req, res, next) => {
 
     const resetPasswordToken = crypto.createHash('sha256').update(token).digest('hex');
 
-  //--
-  const resetPasswordToken = crypto
-    .createHash("sha256")
-    .update(token)
-    .digest("hex");
 
   //--
   const user = await userModel.findOne({
