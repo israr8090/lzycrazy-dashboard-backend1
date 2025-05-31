@@ -1,68 +1,79 @@
 import mongoose from 'mongoose';
 
-// Main Footer schema - matches fields from Footer.jsx component
-const FooterSchema = new mongoose.Schema({
-  admin: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+const SocialLinkSchema = new mongoose.Schema({
+  id: {
+    type: String,
     required: true
   },
-  // File uploads
+  platform: {
+    id: {
+      type: String,
+      required: true
+    },
+    name: {
+      type: String,
+      required: true
+    }
+  },
+  link: {
+    type: String,
+    required: true
+  }
+});
+
+// Recent post schema - matches recentPosts in Footer.jsx
+const RecentPostSchema = new mongoose.Schema({
+  id: {
+    type: String,
+    required: true
+  },
+  name: {
+    type: String,
+    default: ''
+  },
+  link: {
+    type: String,
+    default: ''
+  }
+});
+const DayTimeSchema = new mongoose.Schema({
+  id: {
+    type: String,
+    required: true
+  },
+  day: {
+    type: String,
+    default: ''
+  },
+  time: {
+    type: String,
+    default: ''
+  }
+});
+
+const FooterSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false 
+  },
   logoUrl: {
     type: String,
     default: ''
   },
-  footerImage: {
-    type: String,
-    default: ''
-  },
-  // Basic info
-  title: {
-    type: String,
-    default: ''
-  },
-  // Description items
-  faq: {
-    type: String,
-    default: ''
-  },
-  career: {
-    type: String,
-    default: ''
-  },
-  // Contact information
+  socialIcons: [SocialLinkSchema],
+  recentPosts: [RecentPostSchema],
+  dayTimes: [DayTimeSchema],
   address: {
-    type: String,
-    default: ''
-  },
-  email: {
     type: String,
     default: ''
   },
   phone: {
     type: String,
     default: ''
-  },
-  // Business hours
-  weekday: {
-    type: String,
-    default: ''
-  },
-  saturday: {
-    type: String,
-    default: ''
-  },
-  // Legal links
-  terms: {
-    type: String,
-    default: ''
-  },
-  privacy: {
-    type: String,
-    default: ''
   }
 }, {
-  timestamps: true // Adds createdAt and updatedAt timestamps
+  timestamps: true 
 });
 
 export const footerModel = mongoose.model('Footer', FooterSchema);
