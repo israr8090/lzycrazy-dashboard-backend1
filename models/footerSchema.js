@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 // Main Footer schema - matches fields from Footer.jsx component
 const FooterSchema = new mongoose.Schema({
-  user: {
+  admin: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true

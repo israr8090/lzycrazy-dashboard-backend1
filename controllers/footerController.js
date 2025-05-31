@@ -5,7 +5,12 @@ import { v2 as cloudinary } from 'cloudinary';
 
 // Get footer data
 export const getFooter = catchAsyncErrors(async (req, res, next) => {
-  const footer = await footerModel.findOne({ user: req.user.id });
+  const { userId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+  const footer = await footerModel.findOne({ admin: userId });
 
   if (!footer) {
     return res.status(200).json({
@@ -67,7 +72,7 @@ export const createFooter = catchAsyncErrors(async (req, res, next) => {
   } = req.body;
   
   // Check if footer already exists for this user
-  const existingFooter = await footerModel.findOne({ user: req.user.id });
+  const existingFooter = await footerModel.findOne({ admin: req.user.id });
   
   if (existingFooter) {
     // Update existing footer
@@ -81,7 +86,7 @@ export const createFooter = catchAsyncErrors(async (req, res, next) => {
     if (footerImage) updateData.footerImage = footerImage;
     
     const footer = await footerModel.findOneAndUpdate(
-      { user: req.user.id },
+      { admin: req.user.id },
       updateData,
       { new: true }
     );
@@ -94,7 +99,7 @@ export const createFooter = catchAsyncErrors(async (req, res, next) => {
   } else {
     // Create new footer
     const footerData = {
-      user: req.user.id,
+      admin: req.user.id,
       title, faq, career, address, email,
       weekday, saturday, terms, phone, privacy
     };
@@ -158,7 +163,7 @@ export const updateFooter = catchAsyncErrors(async (req, res, next) => {
     weekday, saturday, terms, phone, privacy 
   } = req.body;
 
-  let footer = await footerModel.findOne({ user: req.user.id });
+  let footer = await footerModel.findOne({ admin: req.user.id });
 
   if (!footer) {
     return next(new ErrorHandler("Footer not found", 404));
@@ -184,7 +189,7 @@ export const updateFooter = catchAsyncErrors(async (req, res, next) => {
   if (footerImage) updateData.footerImage = footerImage;
 
   footer = await footerModel.findOneAndUpdate(
-    { user: req.user.id },
+    { admin: req.user.id },
     { $set: updateData },
     { new: true }
   );
@@ -198,7 +203,7 @@ export const updateFooter = catchAsyncErrors(async (req, res, next) => {
 
 // Delete footer
 export const deleteFooter = catchAsyncErrors(async (req, res, next) => {
-  const footer = await footerModel.findOne({ user: req.user.id });
+  const footer = await footerModel.findOne({ admin: req.user.id });
 
   if (!footer) {
     return next(new ErrorHandler("Footer not found", 404));

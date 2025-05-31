@@ -53,9 +53,13 @@ export const UpdateTimonials = async (req, res) => {
 };
 
 export const getAllTestimonials = async (req, res) => {
-  const adminId = req.user?._id;
+  const { userId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+    
   try {
-    const testimonil = await TestimonilsModel.find({ admin: adminId });
+    const testimonil = await TestimonilsModel.find({ admin: userId });
     if (!testimonil || testimonil.length === 0) {
       return res.json({ success: false, message: "No testimonials found" });
     }

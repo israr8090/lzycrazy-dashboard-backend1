@@ -13,11 +13,13 @@ import {
   resetPassword,
 } from "../controllers/userController.js";
 import { isAuthenticated, authorizeRoles } from "../middlewares/auth.js";
+import upload from "../middlewares/multer.js";
 
 const router = express.Router();
 
 // Public routes
-router.post("/register", registerUser);
+// authorizeRoles("superAdmin")
+router.post("/register",isAuthenticated, authorizeRoles("superAdmin"), upload.single('image'), registerUser);
 router.post("/login", loginUser);
 
 router.get("/logout", logoutUser);
