@@ -77,7 +77,12 @@ export const DeleteProducts = async (req, res) => {
 
 export const getAllProducts = async (req, res) => {
   try {
-    const products = await ProductModel.find({ admin: req.user._id });
+    const { userId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const products = await ProductModel.find({ admin: userId });
     if (products && products.length === 0) {
       res.json({ message: "Products not found" });
     }

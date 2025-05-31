@@ -7,7 +7,7 @@ const NavItemSchema = new Schema({
 });
 
 // Define main header schema with logo, nav items, and admin reference
-const HeaderSchema = new Schema({
+const headerSchema = new Schema({
   logoUrl: String,
   navItems: [NavItemSchema],
   admin: {
@@ -17,4 +17,4 @@ const HeaderSchema = new Schema({
   },
 });
 
-export const headerModel =  model("Header", HeaderSchema);
+export const headerModel =  model("Header", headerSchema);

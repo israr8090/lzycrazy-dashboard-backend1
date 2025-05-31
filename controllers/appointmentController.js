@@ -18,6 +18,7 @@ export const createAppointment = async (req, res) => {
       email,
       phone,
       message,
+      admin: req.user._id,
     });
 
     const savedAppointment = await appointment.save();
@@ -39,8 +40,12 @@ export const createAppointment = async (req, res) => {
 // Get all appointments (admin only)
 export const getAllAppointments = async (req, res) => {
   try {
+    const { userId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
     const appointments = await appointmentModel
-      .find()
+      .find({ admin: userId })
       .populate("admin", "name email");
 
     res.status(200).json({

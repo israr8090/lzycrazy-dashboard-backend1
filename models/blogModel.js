@@ -10,7 +10,7 @@ const blogSchema = new mongoose.Schema(
       type: String, // URL of image
       default: "",  // blank if no image
     },
-    user: {
+    admin: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User", // Reference to the user model
       required: true,

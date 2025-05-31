@@ -14,6 +14,7 @@ import appointmentRoutes from "./router/appointmentRoutes.js";
 import footerRoutes from "./router/footerRoutes.js";
 import produtRoute from "./router/ProductRoute.js";
 import testimonialsRoute from "./router/TestimonialsRoute.js";
+import bannerRoutes from "./router/bannerRoutes.js";
 
 const app = express();
 
@@ -47,6 +48,7 @@ app.use(express.urlencoded({ extended: true })); //--
 //--
 app.use("/api/users", userRoutes);
 app.use("/api/header", headerRoutes);
+app.use("/api/banner", bannerRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/about", aboutUsRoutes);
 app.use("/api/appointments", appointmentRoutes);

@@ -8,7 +8,7 @@ export const addBlog = async (req, res) => {
     const blog = await Blog.create({
       title,
       image,
-      user: req.user._id, // Authenticated user
+      admin: req.user._id, // Authenticated user
     });
 
     res.status(201).json({ message: "Blog created successfully", blog });
@@ -20,7 +20,11 @@ export const addBlog = async (req, res) => {
 // Get All Blogs (with user info)
 export const getBlogs = async (req, res) => {
   try {
-    const blogs = await Blog.find().populate("user", "name email");
+    const { userId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+    const blogs = await Blog.find({admin: userId}).populate("admin", "name email");
     res.json(blogs);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch blogs", error });

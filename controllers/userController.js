@@ -2,35 +2,45 @@ import crypto from "crypto";
 import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
 import ErrorHandler from "../middlewares/error.js";
 import { userModel } from "../models/userSchema.js";
-import { v2 as cloudinary } from "cloudinary";
+import { uploadToCloudinary } from "../utils/cloudinary.js"
 import { generateToken } from "../utils/jwtToken.js";
 import { sendEmail } from "../utils/sendEmail.js";
 
 // Register User with Image Upload
 export const registerUser = catchAsyncErrors(async (req, res, next) => {
-    const { fullName, email, phone, password, role, image } = req.body;
-
-    let imageUrl = "";
-    if (image) {
-        const uploaded = await cloudinary.uploader.upload(image, {
-            folder: "avatars",
-            width: 150,
-            crop: "scale",
-        });
-        imageUrl = uploaded.secure_url;
+    const { fullName, email, phone, password, role } = req.body;
+    if (!req.file) {
+      return next(new ErrorHandler("Image is required", 400));
     }
+    let imageUrl = "";
 
-    const user = await userModel.create({
-        fullName,
-        email,
-        phone,
-        password,
-        role,
-        image: imageUrl,
-    });
+    try {
+        imageUrl = await uploadToCloudinary(req.file.path);
+        if(!imageUrl){
+          return next(new ErrorHandler("Failed to upload image", 400));
+        }
+
+        const createdUser = await userModel.create({
+          fullName,
+          email,
+          phone,
+          password,
+          role,
+          image: imageUrl,
+        });
+        
+        if (!createdUser) {
+          return next(new ErrorHandler("User creation failed", 400));
+        }
+    
+        generateToken(createdUser, "User Registered Successfully", 201, res);
+        
+      } catch (err) {
+        res.status(500).json({ error: err.message });
+      }
 
 
-  generateToken(user, "User Registered Successfully", 201, res);
+
 });
 
 // Login User
