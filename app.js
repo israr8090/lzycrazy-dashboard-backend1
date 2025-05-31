@@ -23,7 +23,7 @@ dotenv.config({ path: "./config/config.env" }); //--
 //--
 
 app.use(cors({
-    origin:[process.env.DASHBOARD_URL],
+    origin: [process.env.FRONTEND_URL, process.env.DASHBOARD_URL],
     methods:["GET", "POST", "PUT", "DELETE"],
     credentials: true,
 }));
@@ -37,13 +37,6 @@ app.use(express.urlencoded({ extended: true })); //--
 // File upload handling is now done in individual routes using multer
 
 //--
-
-//--
-
-// app.use(fileUpload({
-// useTempFiles: true,
-// tempFileDir: '/temp/'  //--
-// }));
 
 //--
 app.use("/api/users", userRoutes);
