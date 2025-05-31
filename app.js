@@ -22,28 +22,21 @@ dotenv.config({ path: "./config/config.env" }); //--
 
 //--
 
-app.use(
-  cors({
-    origin: [process.env.FRONTEND_URL, process.env.DASHBOARD_URL, "http://localhost:6633", "http://localhost:5173"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+app.use(cors({
+    origin: [process.env.FRONTEND_URL, process.env.DASHBOARD_URL],
+    methods:["GET", "POST", "PUT", "DELETE"],
     credentials: true,
-  })
-);
+}));
+
 
 app.use(cookieParser()); //--for accessing cokkies--
-app.use(express.json()); //--
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));-
 app.use(express.urlencoded({ extended: true })); //--
 
 // File upload handling is now done in individual routes using multer
 
 //--
-
-//--
-
-// app.use(fileUpload({
-// useTempFiles: true,
-// tempFileDir: '/temp/'  //--
-// }));
 
 //--
 app.use("/api/users", userRoutes);

@@ -7,12 +7,12 @@ const blogSchema = new mongoose.Schema(
       required: [true, "Please provide a blog title"],
     },
     image: {
-      type: String, // URL of image
-      default: "",  // blank if no image
+      type: String, // Image URL ya file path
+      default: "",
     },
-    admin: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the user model
+      ref: "User", // User model ka reference
       required: true,
     },
   },
