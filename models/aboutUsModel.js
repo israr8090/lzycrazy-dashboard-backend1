@@ -14,7 +14,7 @@ const aboutUsSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    admin: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
