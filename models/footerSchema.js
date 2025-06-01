@@ -64,6 +64,10 @@ const FooterSchema = new mongoose.Schema({
   socialIcons: [SocialLinkSchema],
   recentPosts: [RecentPostSchema],
   dayTimes: [DayTimeSchema],
+  description: {
+    type: String,
+    default: ''
+  },
   address: {
     type: String,
     default: ''

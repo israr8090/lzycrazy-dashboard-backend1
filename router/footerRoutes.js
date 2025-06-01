@@ -50,8 +50,8 @@ router.post("/upload", upload.fields([
 // Test routes for footer management without authentication (for testing purposes)
 router.get("/test/all", getAllFootersTest);
 router.get("/test", getFooterTest);
-router.delete("/test/:id", deleteFooterTest);
-router.put("/test/:id", upload.fields([
+router.delete("/test", deleteFooterTest);
+router.put("/test", upload.fields([
   { name: 'logo', maxCount: 1 },
   { name: 'footerImage', maxCount: 1 }
 ]), updateFooterTest);

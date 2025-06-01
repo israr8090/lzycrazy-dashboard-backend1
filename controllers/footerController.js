@@ -62,7 +62,7 @@ export const createFooter = catchAsyncErrors(async (req, res, next) => {
   
   // Extract all form fields from request body
   const { 
-    address, phone,
+    address, phone, description,
     socialIcons, recentPosts, dayTimes
   } = req.body;
   
@@ -94,7 +94,7 @@ export const createFooter = catchAsyncErrors(async (req, res, next) => {
   if (existingFooter) {
     // Update existing footer
     const updateData = {
-      address, phone
+      address, phone, description
     };
     
     // Add the new array fields if provided
@@ -206,7 +206,7 @@ export const updateFooter = catchAsyncErrors(async (req, res, next) => {
 
   // Get all fields from the request body
   const { 
-    address, phone,
+    address, phone, description,
     socialIcons, recentPosts, dayTimes
   } = req.body;
   
@@ -244,6 +244,7 @@ export const updateFooter = catchAsyncErrors(async (req, res, next) => {
   // Add text fields if provided
   if (address !== undefined) updateData.address = address;
   if (phone !== undefined) updateData.phone = phone;
+  if (description !== undefined) updateData.description = description;
   
   // Add the new array fields if provided
   if (socialIcons) {
@@ -338,7 +339,7 @@ export const testFormData = async (req, res) => {
     }
     
     // Extract form fields from request body
-    const { address, phone } = req.body;
+    const { address, phone, description } = req.body;
     
     // Parse JSON strings if they're provided as strings - wrap in try/catch for safety
     let parsedSocialIcons = [];
@@ -379,7 +380,8 @@ export const testFormData = async (req, res) => {
     
     const footerData = {
       address: address || '',
-      phone: phone || ''
+      phone: phone || '',
+      description: description || ''
     };
     
     // Check for logoUrl directly from frontend
@@ -409,7 +411,24 @@ export const testFormData = async (req, res) => {
     if (footerImage) footerData.footerImage = footerImage;
     
     console.log('Saving footer data:', footerData);
-    const footer = await footerModel.create(footerData);
+    
+    // Check if footer already exists - there should only be one footer per user
+    // For test endpoint, we'll check if any footer exists at all
+    const existingFooter = await footerModel.findOne();
+    
+    let footer;
+    if (existingFooter) {
+      // Update existing footer instead of creating a new one
+      console.log('Footer already exists, updating instead of creating new one');
+      footer = await footerModel.findByIdAndUpdate(
+        existingFooter._id,
+        footerData,
+        { new: true }
+      );
+    } else {
+      // Create new footer if none exists
+      footer = await footerModel.create(footerData);
+    }
     
     // Return received data for verification
     return res.status(201).json({
@@ -440,6 +459,34 @@ export const getAllFootersTest = catchAsyncErrors(async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching all footers:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
+// Delete footer (test endpoint without authentication)
+export const deleteFooterTest = catchAsyncErrors(async (req, res) => {
+  try {
+    // Find the first footer (there should only be one per the business logic)
+    const footer = await footerModel.findOne();
+    
+    if (!footer) {
+      return res.status(404).json({
+        success: false,
+        message: "No footer found to delete"
+      });
+    }
+    
+    await footerModel.findByIdAndDelete(footer._id);
+    
+    return res.status(200).json({
+      success: true,
+      message: "Footer deleted successfully"
+    });
+  } catch (error) {
+    console.error('Error deleting footer:', error);
     return res.status(500).json({
       success: false,
       message: error.message
@@ -522,67 +569,18 @@ export const getFooterTest = catchAsyncErrors(async (req, res) => {
   }
 });
 
-// Delete footer (test endpoint without authentication)
-export const deleteFooterTest = catchAsyncErrors(async (req, res, next) => {
-  try {
-    const footerId = req.params.id;
-    
-    const footer = await footerModel.findById(footerId);
-    
-    if (!footer) {
-      return res.status(404).json({
-        success: false,
-        message: "Footer not found"
-      });
-    }
-    
-    // Delete associated images from Cloudinary if needed
-    // This is optional but good for cleanup
-    if (footer.logoUrl) {
-      try {
-        // Extract public_id from the URL
-        const publicId = footer.logoUrl.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(`footer/logos/${publicId}`);
-      } catch (error) {
-        console.error('Error deleting logo from Cloudinary:', error);
-      }
-    }
-    
-    if (footer.footerImage) {
-      try {
-        // Extract public_id from the URL
-        const publicId = footer.footerImage.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(`footer/images/${publicId}`);
-      } catch (error) {
-        console.error('Error deleting footer image from Cloudinary:', error);
-      }
-    }
-    
-    await footerModel.findByIdAndDelete(footerId);
-    
-    return res.status(200).json({
-      success: true,
-      message: "Footer deleted successfully"
-    });
-  } catch (error) {
-    console.error('Error deleting footer:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message
-    });
-  }
-});
+// Update footer function is defined below
 
 // Update footer (test endpoint without authentication)
 export const updateFooterTest = catchAsyncErrors(async (req, res, next) => {
   try {
-    const footerId = req.params.id;
-    const footer = await footerModel.findById(footerId);
+    // Find the first footer (there should only be one per the business logic)
+    const footer = await footerModel.findOne();
     
     if (!footer) {
       return res.status(404).json({
         success: false,
-        message: "Footer not found"
+        message: "No footer found to update"
       });
     }
     
