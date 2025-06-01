@@ -1,24 +1,25 @@
 import { Blog } from "../models/blogModel.js";
+import { uploadToCloudinary } from "../utils/cloudinary.js";
+import fs from "fs";
 
-// Add Blog (multer se image upload handle hota hai)
+// ✅ Add Blog
 export const addBlog = async (req, res) => {
   try {
     console.log("File:", req.file);
     console.log("Body:", req.body);
 
     const { title } = req.body;
-    let image = "";
+    let imageUrl = "";
 
     if (req.file) {
-      image = req.file.path || req.file.filename;
-    } else if (req.body.image) {
-      image = req.body.image;
+      // Upload to Cloudinary
+      imageUrl = await uploadToCloudinary(req.file.path);
     }
 
     const blog = await Blog.create({
       title,
-      image,
-      user: req.user._id,  // logged in user ka id
+      image: imageUrl,
+      user: req.user._id,
     });
 
     res.status(201).json({ message: "Blog created successfully", blog });
@@ -27,33 +28,31 @@ export const addBlog = async (req, res) => {
   }
 };
 
-// Get All Blogs of a User (auth middleware se req.user aayega)
+// ✅ Get All Blogs for a User
 export const getBlogs = async (req, res) => {
   try {
     console.log("Authenticated user:", req.user);
-
     const userId = req.query.userId || req.user._id;
 
     if (!userId) {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    const blogs = await Blog.find({ user: userId }).populate("user", "name email");
-
+    const blogs = await Blog.find({ user: userId }).populate("user", "fullName email");
     res.json(blogs);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch blogs", error: error.message });
   }
 };
 
-// Remove Blog Image
+// ✅ Remove Image from Blog
 export const removeImage = async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ message: "Blog not found" });
 
     if (blog.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Not authorized to remove image from this blog" });
+      return res.status(403).json({ message: "Not authorized to remove image" });
     }
 
     blog.image = "";
@@ -65,16 +64,14 @@ export const removeImage = async (req, res) => {
   }
 };
 
-// Update Blog (title or image update)
+// ✅ Update Blog (title and/or image)
 export const updateBlog = async (req, res) => {
   try {
     const { title } = req.body;
-    let image = "";
+    let imageUrl = "";
 
     if (req.file) {
-      image = req.file.path || req.file.filename;
-    } else if (req.body.image) {
-      image = req.body.image;
+      imageUrl = await uploadToCloudinary(req.file.path);
     }
 
     const blog = await Blog.findById(req.params.id);
@@ -85,7 +82,7 @@ export const updateBlog = async (req, res) => {
     }
 
     if (title) blog.title = title;
-    if (image) blog.image = image;
+    if (imageUrl) blog.image = imageUrl;
 
     await blog.save();
 
@@ -95,7 +92,7 @@ export const updateBlog = async (req, res) => {
   }
 };
 
-// Delete Blog
+// ✅ Delete Blog
 export const deleteBlog = async (req, res) => {
   try {
     console.log("Delete Blog ID:", req.params.id);
@@ -110,7 +107,6 @@ export const deleteBlog = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to delete this blog" });
     }
 
-    // Fix here
     await blog.deleteOne();
 
     res.json({ message: "Blog deleted successfully" });

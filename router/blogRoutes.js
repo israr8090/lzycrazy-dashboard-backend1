@@ -7,7 +7,7 @@ import {
   deleteBlog,
 } from "../controllers/blogController.js";
 import { isAuthenticated, authorizeRoles } from "../middlewares/auth.js";
-import uploads from "../middlewares/multer.js";
+import upload from "../middlewares/multer.js";
 
 const router = express.Router();
 
@@ -16,7 +16,7 @@ router.post(
   "/Addblogs",
   isAuthenticated,
   authorizeRoles("admin"),
-  uploads.single("image"),
+  upload.single("image"),
   addBlog
 );
 
@@ -36,7 +36,7 @@ router.put(
   "/editblogs/:id",
   isAuthenticated,
   authorizeRoles("admin"),
-  uploads.single("image"),
+  upload.single("image"),
   updateBlog
 );
 
