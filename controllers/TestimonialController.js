@@ -3,6 +3,7 @@ import TestimonilsModel from "../models/TestimonilsModel.js";
 export const createteTimonials = async (req, res) => {
   try {
     const { title, description } = req.body;
+    console.log(req.body);
     const adminId = req.user?._id;
     if (!title || !description) {
       return res.json({
@@ -54,10 +55,10 @@ export const UpdateTimonials = async (req, res) => {
 
 export const getAllTestimonials = async (req, res) => {
   const { userId } = req.body;
-    if (!userId) {
-      return res.status(400).json({ message: "User ID is required" });
-    }
-    
+  if (!userId) {
+    return res.status(400).json({ message: "User ID is required" });
+  }
+
   try {
     const testimonil = await TestimonilsModel.find({ admin: userId });
     if (!testimonil || testimonil.length === 0) {

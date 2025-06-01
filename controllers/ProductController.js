@@ -4,7 +4,7 @@ import { uploadToCloudinary } from "../utils/cloudinary.js";
 export const createProduct = async (req, res, next) => {
   const { title, price } = req.body;
 
-  console.log("controller header create called");
+  console.log(req.body);
   if (!req.file) {
     return res.status(400).json({ error: "Logo image is required." });
   }
