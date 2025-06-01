@@ -13,10 +13,13 @@ const SpecialOfferSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Image URL is required']
   },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   admin: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'Admin reference is required']
+    ref: 'User'
   }
 }, {
   timestamps: true
