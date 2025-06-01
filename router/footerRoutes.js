@@ -3,77 +3,27 @@ import {
   createFooter,
   getFooter,
   updateFooter,
-  deleteFooter,
-  testFormData,
-  getFooterTest,
-  getAllFootersTest,
-  debugFormData,
-  uploadFooterImage,
-  deleteFooterTest,
-  updateFooterTest,
+  deleteFooter
 } from "../controllers/footerController.js";
 import { isAuthenticated } from "../middlewares/auth.js";
-import upload from "../middlewares/multer.js";
+import uploads from "../middlewares/multer.js";
 
 const router = express.Router();
 
 // Footer APIs
-router.post("/", getFooter);
+router.post("/get", getFooter); // Changed path to /get for retrieving footer data
 
 // Use multer to handle file uploads in these routes
-router.post(
-  "/",
-  isAuthenticated,
-  upload.fields([
-    { name: "logo", maxCount: 1 },
-    { name: "footerImage", maxCount: 1 },
-  ]),
-  createFooter
-);
+router.post("/create", isAuthenticated, uploads.fields([
+  { name: 'logo', maxCount: 1 },
+  { name: 'footerImage', maxCount: 1 }
+]), createFooter); // Changed path to /create for creating footer
 
-router.put(
-  "/",
-  isAuthenticated,
-  upload.fields([
-    { name: "logo", maxCount: 1 },
-    { name: "footerImage", maxCount: 1 },
-  ]),
-  updateFooter
-);
+router.put("/", isAuthenticated, uploads.fields([
+  { name: 'logo', maxCount: 1 },
+  { name: 'footerImage', maxCount: 1 }
+]), updateFooter);
 
 router.delete("/", isAuthenticated, deleteFooter);
-
-// Test routes - no authentication required (with file upload support)
-router.post(
-  "/test",
-  upload.fields([
-    { name: "logo", maxCount: 1 },
-    { name: "footerImage", maxCount: 1 },
-  ]),
-  testFormData
-);
-
-// Ultra simple debug endpoint without any middleware
-router.post("/debug", debugFormData);
-
-// Dedicated file upload endpoint
-router.post(
-  "/upload",
-  upload.fields([{ name: "logo", maxCount: 1 }]),
-  uploadFooterImage
-);
-
-// Test routes for footer management without authentication (for testing purposes)
-router.post("/test/all", getAllFootersTest);
-router.post("/test", getFooterTest);
-router.delete("/test", deleteFooterTest);
-router.put(
-  "/test",
-  upload.fields([
-    { name: "logo", maxCount: 1 },
-    { name: "footerImage", maxCount: 1 },
-  ]),
-  updateFooterTest
-);
 
 export default router;
