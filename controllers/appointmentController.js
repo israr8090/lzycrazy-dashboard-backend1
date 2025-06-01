@@ -19,9 +19,9 @@ export const testCreateAppointment = async (req, res) => {
     }
     
     // Extract all fields from the request body
-    const { name, email, phone, message, title, description, fileName, fileUrl } = req.body;
+    const { name, email, phone, message, userId} = req.body;
     
-    console.log('Extracted data:', { name, email, phone, message, title, description, fileName, fileUrl });
+    console.log('Extracted data:', { name, email, phone, message, userId });
 
     // Validate required fields
     if (!name || !email || !phone || !message) {
@@ -44,10 +44,7 @@ export const testCreateAppointment = async (req, res) => {
       email,
       phone,
       message,
-      ...(title && { title }),
-      ...(description && { description }),
-      ...(fileName && { fileName }),
-      ...(fileUrl && { fileUrl }),
+      admin: userId
     };
     
     console.log('Creating appointment with data:', JSON.stringify(appointmentData, null, 2));

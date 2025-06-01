@@ -21,23 +21,6 @@ const appointmentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    // Additional fields from the form
-    title: {
-      type: String,
-      trim: true,
-    },
-    description: {
-      type: String,
-      trim: true,
-    },
-    fileName: {
-      type: String,
-      trim: true,
-    },
-    fileUrl: {
-      type: String,
-      trim: true,
-    },
     status: {
       type: String,
       enum: ["pending", "accepted", "rejected"],

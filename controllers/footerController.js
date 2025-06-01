@@ -2,11 +2,11 @@ import { catchAsyncErrors } from '../middlewares/catchAsyncErrors.js';
 import ErrorHandler from '../middlewares/error.js';
 import { footerModel } from '../models/footerSchema.js';
 import { v2 as cloudinary } from 'cloudinary';
+import { uploadToCloudinary } from '../utils/cloudinary.js';
 
 // Get footer data
 export const getFooter = catchAsyncErrors(async (req, res, next) => {
   // Check for footer by user ID or admin ID (same entity, different roles)
-  let query = {};
 
   const { userId } = req.body;
   if (!userId) {
@@ -42,24 +42,15 @@ export const createFooter = catchAsyncErrors(async (req, res, next) => {
       // Process logo upload
       if (req.files.logo && req.files.logo.length > 0) {
         console.log('Processing logo file:', req.files.logo[0].path);
-        const result = await cloudinary.uploader.upload(req.files.logo[0].path, {
-          folder: 'footer/logos',
-          width: 250,
-          crop: 'scale'
-        });
-        logoUrl = result.secure_url;
+        logoUrl = await uploadToCloudinary(req.files.logo[0].path)
         console.log('Logo uploaded successfully:', logoUrl);
       }
       
       // Process footer image upload
       if (req.files.footerImage && req.files.footerImage.length > 0) {
         console.log('Processing footer image file:', req.files.footerImage[0].path);
-        const result = await cloudinary.uploader.upload(req.files.footerImage[0].path, {
-          folder: 'footer/images',
-          width: 1000,
-          crop: 'scale'
-        });
-        footerImage = result.secure_url;
+        
+        footerImage = await uploadToCloudinary(req.files.footerImage[0]);
         console.log('Footer image uploaded successfully:', footerImage);
       }
     }
@@ -199,24 +190,25 @@ export const updateFooter = catchAsyncErrors(async (req, res, next) => {
       // Process logo upload
       if (req.files.logo && req.files.logo.length > 0) {
         console.log('Update - Processing logo file:', req.files.logo[0].path);
-        const result = await cloudinary.uploader.upload(req.files.logo[0].path, {
-          folder: 'footer/logos',
-          width: 250,
-          crop: 'scale'
-        });
-        logoUrl = result.secure_url;
+        // const result = await cloudinary.uploader.upload(req.files.logo[0].path, {
+        //   folder: 'footer/logos',
+        //   width: 250,
+        //   crop: 'scale'
+        // });
+        logoUrl = await uploadToCloudinary(req.files.logo[0].path);
         console.log('Update - Logo uploaded successfully:', logoUrl);
       }
       
       // Process footer image upload
       if (req.files.footerImage && req.files.footerImage.length > 0) {
         console.log('Update - Processing footer image file:', req.files.footerImage[0].path);
-        const result = await cloudinary.uploader.upload(req.files.footerImage[0].path, {
-          folder: 'footer/images',
-          width: 1000,
-          crop: 'scale'
-        });
-        footerImage = result.secure_url;
+        // const result = await cloudinary.uploader.upload(req.files.footerImage[0].path, {
+        //   folder: 'footer/images',
+        //   width: 1000,
+        //   crop: 'scale'
+        // });
+        footerImage = await uploadToCloudinary(req.files.footerImage[0].path);
+        
         console.log('Update - Footer image uploaded successfully:', footerImage);
       }
     }
@@ -348,24 +340,24 @@ export const testFormData = async (req, res) => {
         // Process logo upload
         if (req.files.logo && req.files.logo.length > 0) {
           console.log('Processing logo file:', req.files.logo[0].path);
-          const result = await cloudinary.uploader.upload(req.files.logo[0].path, {
-            folder: 'footer/logos',
-            width: 250,
-            crop: 'scale'
-          });
-          logoUrl = result.secure_url;
+          // const result = await cloudinary.uploader.upload(req.files.logo[0].path, {
+          //   folder: 'footer/logos',
+          //   width: 250,
+          //   crop: 'scale'
+          // });
+          logoUrl = await uploadToCloudinary(req.files.logo[0].path);
           console.log('Logo uploaded successfully:', logoUrl);
         }
         
         // Process footer image upload
         if (req.files.footerImage && req.files.footerImage.length > 0) {
           console.log('Processing footer image file:', req.files.footerImage[0].path);
-          const result = await cloudinary.uploader.upload(req.files.footerImage[0].path, {
-            folder: 'footer/images',
-            width: 1000,
-            crop: 'scale'
-          });
-          footerImage = result.secure_url;
+          // const result = await cloudinary.uploader.upload(req.files.footerImage[0].path, {
+          //   folder: 'footer/images',
+          //   width: 1000,
+          //   crop: 'scale'
+          // });
+          footerImage = await uploadToCloudinary(req.files.footerImage[0].path);
           console.log('Footer image uploaded successfully:', footerImage);
         }
       } catch (error) {
@@ -557,13 +549,13 @@ export const uploadFooterImage = async (req, res) => {
     
     // Process logo upload
     console.log('Processing logo file:', req.files.logo[0].path);
-    const result = await cloudinary.uploader.upload(req.files.logo[0].path, {
-      folder: 'footer/logos',
-      width: 250,
-      crop: 'scale'
-    });
+    // const result = await cloudinary.uploader.upload(req.files.logo[0].path, {
+    //   folder: 'footer/logos',
+    //   width: 250,
+    //   crop: 'scale'
+    // });
     
-    const logoUrl = result.secure_url;
+    const logoUrl = await uploadToCloudinary(req.files.logo[0].path);
     console.log('Logo uploaded successfully to Cloudinary:', logoUrl);
     
     // Return the Cloudinary URL
@@ -631,23 +623,23 @@ export const updateFooterTest = catchAsyncErrors(async (req, res, next) => {
       // Process logo upload
       if (req.files.logo && req.files.logo.length > 0) {
         console.log('Processing logo file:', req.files.logo[0].path);
-        const result = await cloudinary.uploader.upload(req.files.logo[0].path, {
-          folder: 'footer/logos',
-          width: 250,
-          crop: 'scale'
-        });
-        logoUrl = result.secure_url;
+        // const result = await cloudinary.uploader.upload(req.files.logo[0].path, {
+        //   folder: 'footer/logos',
+        //   width: 250,
+        //   crop: 'scale'
+        // });
+        logoUrl = await uploadToCloudinary(req.files.logo[0].path);
       }
       
       // Process footer image upload
       if (req.files.footerImage && req.files.footerImage.length > 0) {
         console.log('Processing footer image file:', req.files.footerImage[0].path);
-        const result = await cloudinary.uploader.upload(req.files.footerImage[0].path, {
-          folder: 'footer/images',
-          width: 1000,
-          crop: 'scale'
-        });
-        footerImage = result.secure_url;
+        // const result = await cloudinary.uploader.upload(req.files.footerImage[0].path, {
+        //   folder: 'footer/images',
+        //   width: 1000,
+        //   crop: 'scale'
+        // });
+        footerImage = await uploadToCloudinary(req.files.footerImage[0].path);
       }
     }
     
