@@ -1,4 +1,5 @@
 import { AboutUs } from "../models/aboutUsModel.js";
+import { uploadToCloudinary } from "../utils/cloudinary.js";
 
 // Create AboutUs entry with image upload
 export const addAboutUs = async (req, res) => {
@@ -10,13 +11,19 @@ export const addAboutUs = async (req, res) => {
 
     // Validation: title और description जरूर चाहिए
     if (!title || !description) {
-      return res.status(400).json({ message: "Title and description are required" });
+      return res
+        .status(400)
+        .json({ message: "Title and description are required" });
     }
 
     let image = "";
 
     if (req.file) {
-      image = req.file.path;
+      // Upload image to Cloudinary
+      image = await uploadToCloudinary(req.file.path);
+      if (!image) {
+        return res.status(500).json({ message: "Failed to upload image" });
+      }
     } else if (req.body.image) {
       image = req.body.image;
     }
@@ -60,7 +67,9 @@ export const updateAboutUs = async (req, res) => {
     const { title, description } = req.body;
 
     if (!title && !description && !req.file && !req.body.image) {
-      return res.status(400).json({ message: "At least one field is required to update" });
+      return res
+        .status(400)
+        .json({ message: "At least one field is required to update" });
     }
 
     const about = await AboutUs.findById(req.params.id);
@@ -70,7 +79,12 @@ export const updateAboutUs = async (req, res) => {
     if (description) about.description = description;
 
     if (req.file) {
-      about.image = req.file.path;
+      // Upload image to Cloudinary
+      const cloudinaryUrl = await uploadToCloudinary(req.file.path);
+      if (!cloudinaryUrl) {
+        return res.status(500).json({ message: "Failed to upload image" });
+      }
+      about.image = cloudinaryUrl;
     } else if (req.body.image) {
       about.image = req.body.image;
     }
