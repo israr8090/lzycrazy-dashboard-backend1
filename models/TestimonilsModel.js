@@ -6,9 +6,16 @@ const TestimonialsSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    head_title: {
+      type: String,
+      required: true,
+    },
     description: {
       type: String,
       required: true,
+    },
+    image: {
+      type: String,
     },
 
     admin: {

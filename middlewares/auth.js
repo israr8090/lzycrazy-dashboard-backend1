@@ -6,10 +6,15 @@ export const isAuthenticated = async (req, res, next) => {
     const { token } = req.cookies;
 
     if (!token) {
-      return res.status(401).json({ message: "Please login to access this resource" });
+      return res
+        .status(401)
+        .json({ message: "Please login to access this resource" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "defaultSecret");
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "defaultSecret"
+    );
     req.user = await userModel.findById(decoded.id).select("-password"); // password exclude kiya
 
     if (!req.user) {
@@ -18,6 +23,7 @@ export const isAuthenticated = async (req, res, next) => {
 
     // console.log("isAuthenticated middleware called");
     // console.log("Authenticated user:", req.user);
+
     next();
   } catch (error) {
     return res.status(401).json({ message: "Invalid or expired token" });

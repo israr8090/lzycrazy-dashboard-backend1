@@ -12,17 +12,29 @@ const router = express.Router();
 
 router.post(
   "/add-product",
-  isAuthenticated, authorizeRoles("admin"),
+  isAuthenticated,
+  authorizeRoles("admin"),
   upload.single("image"),
   createProduct
 );
 router.put(
   "/update-product/:id",
-  isAuthenticated, authorizeRoles("admin"),
+  isAuthenticated,
+  authorizeRoles("admin"),
   upload.single("image"),
   UpdateProduct
 );
-router.get("/get-product", getAllProducts);
-router.delete("/delete-product/:id", isAuthenticated, authorizeRoles("admin"), DeleteProducts);
+router.get(
+  "/get-product",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  getAllProducts
+);
+router.delete(
+  "/delete-product/:id",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  DeleteProducts
+);
 
 export default router;

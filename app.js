@@ -24,7 +24,7 @@ dotenv.config({ path: "./config/config.env" }); //--
 
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL, process.env.DESHBOARD_URL],
+    origin: [process.env.FRONTEND_URL, "http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -53,10 +53,11 @@ app.use("/api/blogs", blogRoutes);
 app.use("/api/about", aboutUsRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/footer", footerRoutes);
-app.use("/api/v1/products", produtRoute);
-app.use("/api/v1/testimonials", testimonialsRoute);
+app.use("/api/products", produtRoute);
+app.use("/api/testimonials", testimonialsRoute);
 
 dbConnection(); //--
+
 app.use(errorMiddleware); //--
 
 export default app;

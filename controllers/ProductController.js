@@ -2,16 +2,12 @@ import ProductModel from "../models/ProductModel.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 
 export const createProduct = async (req, res, next) => {
-  const { title, price } = req.body;
-
-  console.log("controller header create called");
-  if (!req.file) {
-    return res.status(400).json({ error: "Logo image is required." });
-  }
-
   try {
+    const { title, price } = req.body;
     const imageFile = await uploadToCloudinary(req.file.path);
-
+    if (!imageFile) {
+      return res.json({ message: "Image not seleted" });
+    }
     const products = await ProductModel.create({
       title,
       price,
@@ -20,6 +16,7 @@ export const createProduct = async (req, res, next) => {
     });
 
     res.status(201).json({
+      success: true,
       message: "Products created successfully",
       products,
     });
@@ -54,6 +51,7 @@ export const UpdateProduct = async (req, res, next) => {
     }
 
     res.status(200).json({
+      success: true,
       message: "Product updated successfully",
       products: updatedProduct,
     });
@@ -66,10 +64,10 @@ export const DeleteProducts = async (req, res) => {
   try {
     const products = await ProductModel.findByIdAndDelete(req.params.id);
     if (products && products.length === 0) {
-      res.json({ message: "Products not found" });
+      res.json({ success: false, message: "Products not found" });
     }
 
-    res.status(201).json({ message: "Product Deleted" });
+    res.status(201).json({ success: true, message: "Product Deleted" });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
@@ -77,17 +75,19 @@ export const DeleteProducts = async (req, res) => {
 
 export const getAllProducts = async (req, res) => {
   try {
-    const { userId } = req.body;
-    if (!userId) {
+    const adminId = req.user?._id; // Get the user ID from the middleware
+
+    if (!adminId) {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    const products = await ProductModel.find({ admin: userId });
-    if (products && products.length === 0) {
-      res.json({ message: "Products not found" });
+    const products = await ProductModel.find({ admin: adminId });
+
+    if (!products || products.length === 0) {
+      return res.status(404).json({ message: "Products not found" });
     }
 
-    res.status(201).json(products);
+    res.status(200).json({ success: true, products });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
