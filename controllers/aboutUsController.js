@@ -54,7 +54,15 @@ export const addAboutUs = async (req, res) => {
 // Get all AboutUs entries
 export const getAboutUs = async (req, res) => {
   try {
-    const data = await AboutUs.find().populate("user", "name email");
+    const { userId } = req.body;
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const data = await AboutUs.find({ user: userId }).populate(
+      "user",
+      "name email"
+    );
     res.json(data);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch About Us", error });

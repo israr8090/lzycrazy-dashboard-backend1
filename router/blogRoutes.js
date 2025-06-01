@@ -21,7 +21,7 @@ router.post(
 );
 
 // Get blogs (GET)
-router.get("/blogs", isAuthenticated, getBlogs);
+router.post("/blogs", getBlogs);
 
 // Remove blog image (PUT)
 router.put(

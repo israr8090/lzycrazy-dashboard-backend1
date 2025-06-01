@@ -39,7 +39,7 @@ export const getBlogs = async (req, res) => {
   try {
     console.log("Authenticated user:", req.user);
 
-    const userId = req.query.userId || req.user._id;
+    const { userId } = req.body; // userId ko body se lete hain
 
     if (!userId) {
       return res.status(400).json({ message: "User ID is required" });

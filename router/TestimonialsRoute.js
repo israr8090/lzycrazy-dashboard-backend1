@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.post("/add-testimonial", isAuthenticated, createteTimonials);
 router.put("/update-testimonial/:id", isAuthenticated, UpdateTimonials);
-router.get("/get-testimonial", isAuthenticated, getAllTestimonials);
+router.post("/get-testimonial", getAllTestimonials);
 router.delete("/delete-testimonial/:id", isAuthenticated, DeleteTestimonials);
 
 export default router;

@@ -18,7 +18,7 @@ import upload from "../middlewares/multer.js";
 const router = express.Router();
 
 // Footer APIs
-router.get("/", isAuthenticated, getFooter);
+router.post("/", getFooter);
 
 // Use multer to handle file uploads in these routes
 router.post(
@@ -64,8 +64,8 @@ router.post(
 );
 
 // Test routes for footer management without authentication (for testing purposes)
-router.get("/test/all", getAllFootersTest);
-router.get("/test", getFooterTest);
+router.post("/test/all", getAllFootersTest);
+router.post("/test", getFooterTest);
 router.delete("/test", deleteFooterTest);
 router.put(
   "/test",

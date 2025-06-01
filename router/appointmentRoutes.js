@@ -5,7 +5,7 @@ import {
   testGetAppointmentById,
   testUpdateAppointment,
   testDeleteAppointment,
-  testUpdateAppointmentStatus
+  testUpdateAppointmentStatus,
 } from "../controllers/appointmentController.js";
 import { isAuthenticated } from "../middlewares/auth.js";
 
@@ -13,8 +13,8 @@ const router = express.Router();
 
 // Test routes (no authentication required) - for development/testing
 router.post("/test/book", testCreateAppointment);
-router.get("/test/all", testGetAllAppointments);
-router.get("/test/:id", testGetAppointmentById);
+router.post("/test/all", testGetAllAppointments);
+router.post("/test/:id", testGetAppointmentById);
 router.put("/test/:id", testUpdateAppointment);
 router.delete("/test/:id", testDeleteAppointment);
 router.patch("/test/:id/status", testUpdateAppointmentStatus);
