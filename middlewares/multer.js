@@ -9,7 +9,7 @@ const __dirname = dirname(__filename);
 
 const storage = diskStorage({
   destination: (req, file, cb) => {
-    // Use a relative path to your project directory
+    
     const tempDir = join(__dirname, "../temp");
     cb(null, tempDir);
   },

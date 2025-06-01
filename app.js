@@ -15,6 +15,7 @@ import footerRoutes from "./router/footerRoutes.js";
 import produtRoute from "./router/ProductRoute.js";
 import testimonialsRoute from "./router/TestimonialsRoute.js";
 import bannerRoutes from "./router/bannerRoutes.js";
+import specialOfferRoutes from "./router/specialOfferRoutes.js";
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/footer", footerRoutes);
 app.use("/api/v1/products", produtRoute);
 app.use("/api/v1/testimonials", testimonialsRoute);
+app.use("/api/specialOffers", specialOfferRoutes);
 
 dbConnection(); //--
 app.use(errorMiddleware); //--
