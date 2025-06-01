@@ -1,7 +1,7 @@
 import { catchAsyncErrors } from '../middlewares/catchAsyncErrors.js';
 import { specialOfferModel } from '../models/specialOfferSchema.js';
 import cloudinary from 'cloudinary';
-import fs from 'fs';
+import { uploadToCloudinary } from '../utils/cloudinary.js';
 
 // Create a new special offer (with authentication)
 export const createSpecialOffer = catchAsyncErrors(async (req, res, next) => {
@@ -18,17 +18,8 @@ export const createSpecialOffer = catchAsyncErrors(async (req, res, next) => {
     let imageUrl = '';
     if (req.file) {
       // Upload image to Cloudinary
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'specialOffers',
-        width: 1000,
-        crop: 'scale'
-      });
-      imageUrl = result.secure_url;
+      imageUrl = await uploadToCloudinary(req.file.path);;
       
-      // Remove temp file
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error("Error deleting temp file:", err);
-      });
     } else {
       return res.status(400).json({
         success: false,
@@ -163,17 +154,8 @@ export const updateSpecialOffer = catchAsyncErrors(async (req, res, next) => {
       }
       
       // Upload new image
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'specialOffers',
-        width: 1000,
-        crop: 'scale'
-      });
-      imageUrl = result.secure_url;
+      imageUrl = await uploadToCloudinary(req.file.path);
       
-      // Remove temp file
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error("Error deleting temp file:", err);
-      });
     }
     
     const { title, description } = req.body;
