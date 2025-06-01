@@ -37,7 +37,7 @@ export const addBlog = async (req, res) => {
 // Get All Blogs of a User (auth middleware se req.user aayega)
 export const getBlogs = async (req, res) => {
   try {
-    console.log("Authenticated user:", req.user);
+    
 
     const { userId } = req.body; // userId ko body se lete hain
 
