@@ -66,9 +66,9 @@ router.post(
 // Test routes for footer management without authentication (for testing purposes)
 router.get("/test/all", getAllFootersTest);
 router.get("/test", getFooterTest);
-router.delete("/test/:id", deleteFooterTest);
+router.delete("/test", deleteFooterTest);
 router.put(
-  "/test/:id",
+  "/test",
   upload.fields([
     { name: "logo", maxCount: 1 },
     { name: "footerImage", maxCount: 1 },
