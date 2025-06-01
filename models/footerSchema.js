@@ -57,6 +57,11 @@ const FooterSchema = new mongoose.Schema({
     ref: 'User',
     required: false 
   },
+  admin: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin',
+    required: false
+  },
   logoUrl: {
     type: String,
     default: ''
